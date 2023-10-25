@@ -100,6 +100,12 @@ public class ProblemSolver implements IProblem {
         return parentMap;
     }
 
+
+
+
+
+
+    
     @Override
     public <V> Edge<V> addRedundant(Graph<V> g, V root) {
         LinkedList<Graph<V>> Trees = biggestSubTreeList(g, root);
@@ -111,11 +117,11 @@ public class ProblemSolver implements IProblem {
         V node2 = null;
 
         if (firstBiggestTree != null) {
-            node1 = getDeepestNodeWithMostNeighbours(firstBiggestTree);
+            node1 = getDeepestParentWithMostNeighbours(firstBiggestTree);
         }
 
         if (secondBiggestTree != null) {
-            node2 = getDeepestNodeWithMostNeighbours(secondBiggestTree);
+            node2 = getDeepestParentWithMostNeighbours(secondBiggestTree);
         }
 
         Edge<V> edge;
@@ -135,46 +141,48 @@ public class ProblemSolver implements IProblem {
         return edge;
     }
 
-    // fester til groveste foreldrer
-    private static <V> V getDeepestNodeWithMostNeighbours(Graph<V> graph) {
-        Map<V, Integer> depthMap = new HashMap<>();// map med dybden til en node
-        Queue<V> queue = new LinkedList<>();
-        V root = graph.getFirstNode();// rooten
-        queue.add(root);// legger til root i køen
-        depthMap.put(root, 0);// root har dybde 0
-
-        int maxDepth = 0; // max depth settes til 0
-
-        // bryr oss bare om dybden
-        while (!queue.isEmpty()) {// imens køen ikke er tom
-            V currentNode = queue.poll();// henter og fjerner frøste node fra kjøen
-            for (V neighbour : graph.neighbours(currentNode)) {// for naboene til current
-                if (!depthMap.containsKey(neighbour)) {// hvis naboen ikke finnes i depthMap
-                    int depth = depthMap.get(currentNode) + 1;// dybden plusses med 1
-                    depthMap.put(neighbour, depth);// legger til naboen og dybden i hashmap
-                    queue.add(neighbour);// legger til naboen i køen
-                    if (depth > maxDepth) {// om dybden er større en max
-                        maxDepth = depth; // blir max den gitte dybden
-                    }
-                }
-            }
-        }
-
-        V champNode = null;// seiers node
-        int maxNeighbours = 0;// highscore variabel
-
-        for (Map.Entry<V, Integer> entry : depthMap.entrySet()) {// entry gjør det lett å iterere over
-            if (entry.getValue() == maxDepth - 1) {// bare noder som har max dybde, minus 1 så får jeg foreldre
-                int currentNeighbourCount = graph.degree(entry.getKey());// teller naboene til en gitt node
-                if (currentNeighbourCount > maxNeighbours) {// hvis currentGradtall er større en maxGradtall
-                    maxNeighbours = currentNeighbourCount;// settes currentGradtall til maxGradtall
-                    champNode = entry.getKey();// champNode blir kandidat for noden som skal returneres
-                }
-            }
-        }
-
-        return champNode;
-    }
+    private static <V> V getDeepestParentWithMostNeighbours(Graph<V> graph) {
+		Map<V, Integer> depthMap = new HashMap<>();//dybde map
+		Map<V, Integer> scoreMap = new HashMap<>();//socring map
+		Queue<V> queue = new LinkedList<>();
+		
+		V root = graph.getFirstNode();
+		queue.add(root);
+		depthMap.put(root, 0);//dybden til root er null
+		scoreMap.put(root, graph.degree(root));//scoren til root er dens naboer
+	
+		int maxDepth = 0;// highScore variabel
+		
+		while (!queue.isEmpty()) {//imens køen ikke er tom
+			V currentNode = queue.poll();// henter og fjerner frøste node fra kjøen
+			for (V neighbour : graph.neighbours(currentNode)) {// for naboene til current
+				if (!depthMap.containsKey(neighbour)) {// hvis naboen ikke finnes i depthMap
+					int depth = depthMap.get(currentNode) + 1;// dybden plusses med 1
+					depthMap.put(neighbour, depth);// legger til naboen og dybden i hashmap
+					scoreMap.put(neighbour, scoreMap.get(currentNode) + graph.degree(neighbour)); //legger til nabo, og
+					queue.add(neighbour);//legger til naboen i køen
+					if (depth > maxDepth) { //om dybden er større en max
+						maxDepth = depth;// ny highScore
+					}
+				}
+			}
+		}
+		
+		V champNode = null;//seiers node 
+		int maxScore = 0;//highScore
+	
+		for (Map.Entry<V, Integer> entry : depthMap.entrySet()) {//entry gjør det lett å iterere over
+			if (entry.getValue() == maxDepth - 1) {//bare noder som har max dybde, minus 1 så får jeg foreldre
+				int currentScore = scoreMap.get(entry.getKey());// teller naboene til en gitt node
+				if (currentScore > maxScore) {//hvis currentGradtall er større en maxGradtall
+					maxScore = currentScore;//// settes currentGradtall til maxGradtall
+					champNode = entry.getKey();// champNode blir kandidat for noden som skal returneres
+				}
+			}
+		}
+	
+		return champNode;
+	}
 
     private <V> LinkedList<Graph<V>> biggestSubTreeList(Graph<V> g, V root) {
         LinkedList<Graph<V>> treeList = new LinkedList<>();
