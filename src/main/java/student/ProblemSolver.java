@@ -1,16 +1,13 @@
 package student;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -18,80 +15,110 @@ import graph.*;
 
 public class ProblemSolver implements IProblem {
 
-    @Override
-    public <V, E extends Comparable<E>> ArrayList<Edge<V>> mst(WeightedGraph<V, E> g) {
-        ArrayList<Edge<V>> mstEdges = new ArrayList<>();
-        HashSet<V> visited = new HashSet<>();
+    public <V, E extends Comparable<E>> ArrayList<Edge<V>> mst(WeightedGraph<V, E> g) { // O(M log M)
+        ArrayList<Edge<V>> result = new ArrayList<>(); // O(1)
 
-        PriorityQueue<Edge<V>> priorityQueue = new PriorityQueue<>(
-                (e1, e2) -> g.getWeight(e1.a, e1.b).compareTo(g.getWeight(e2.a, e2.b)));
-
-        V startVertex = g.getFirstNode();
-        visited.add(startVertex);
-
-        for (Edge<V> edge : g.adjacentEdges(startVertex)) {
-            priorityQueue.add(edge);
+        ArrayList<Edge<V>> edges = new ArrayList<>(); // O(1)
+        for (Edge<V> edge : g.edges()) { // O(M)
+            edges.add(edge); // O(1)
         }
 
-        while (!priorityQueue.isEmpty()) {
-            Edge<V> currentEdge = priorityQueue.poll();
+        Collections.sort(edges, g); // O(M log M)
 
-            if (visited.contains(currentEdge.a) && visited.contains(currentEdge.b)) {
-                continue;
+        UnionFindBySize<V> ds = new UnionFindBySize<>(g.vertices()); // O(N)
+
+        for (Edge<V> edge : edges) { // O(M)
+            V set1 = ds.find(edge.a); // O(α(N))
+            V set2 = ds.find(edge.b); // O(α(N))
+
+            if (!set1.equals(set2)) {
+                result.add(edge); // O(1)
+                ds.union(set1, set2); // O(α(N))
             }
 
-            mstEdges.add(currentEdge);
-            V newVertex = visited.contains(currentEdge.a) ? currentEdge.b : currentEdge.a;
-            visited.add(newVertex);
-
-            for (Edge<V> edge : g.adjacentEdges(newVertex)) {
-                if (!visited.contains(edge.a) || !visited.contains(edge.b)) {
-                    priorityQueue.add(edge);
-                }
+            if (result.size() == g.numVertices() - 1) { // O(1)
+                break; // O(1)
             }
         }
 
-        return mstEdges;
+        return result; // O(1)
     }
 
-    @Override
+    // @Override
+    // public <V> V lca(Graph<V> g, V root, V u, V v) {
+    // HashMap<V, V> parentMapU = dfsPathToTarget(g, root, u);
+    // HashMap<V, V> parentMapV = dfsPathToTarget(g, root, v);
+
+    // HashMap<V, Boolean> pathFromU = new HashMap<>(); //O(1)
+    // V current = u; //O(1)
+
+    // while (current != null) {//O(n)
+    // pathFromU.put(current, true); //O(1)
+    // current = parentMapU.get(current); //O(1)
+    // }
+
+    // current = v;
+    // while (current != null) { //O(n)
+    // if (pathFromU.containsKey(current)) { //O(1)
+    // return current;
+    // }
+    // current = parentMapV.get(current); //O(1)
+    // }
+
+    // return null;
+    // }
     public <V> V lca(Graph<V> g, V root, V u, V v) {
-        HashMap<V, V> parentMap = dfs(g, root);
+        Map<V, V> parentMap = new HashMap<>();
+        dfs(g, root, null, parentMap);
 
-        HashSet<V> ancestorsOfU = new HashSet<>();
+        Set<V> ancestorsU = new HashSet<>();
+        Set<V> ancestorsV = new HashSet<>();
 
-        V current = u;
-        while (current != null) {
-            ancestorsOfU.add(current);
-            current = parentMap.get(current);
+        V currentNode = u;
+        while (currentNode != null) {
+            ancestorsU.add(currentNode);
+            currentNode = parentMap.get(currentNode);
         }
 
-        current = v;
-        while (current != null) {
-            if (ancestorsOfU.contains(current)) {
-                return current;
+        currentNode = v;
+        while (currentNode != null) {
+            if (ancestorsU.contains(currentNode)) {
+                return currentNode;
             }
-            current = parentMap.get(current);
+            ancestorsV.add(currentNode);
+            currentNode = parentMap.get(currentNode);
         }
 
         return null;
     }
 
-    // Non recursive dfs
-    private <V> HashMap<V, V> dfs(Graph<V> g, V root) {
-        HashMap<V, V> parentMap = new HashMap<>();
-        HashSet<V> visited = new HashSet<>();
-        Stack<V> stack = new Stack<>();
+    private static <V> void dfs(Graph<V> g, V node, V parent, Map<V, V> parentMap) { // Total: O(n)
 
-        stack.push(root);
-        visited.add(root);
-        parentMap.put(root, null);
+        parentMap.put(node, parent); // O(1)
+
+        for (V neighbor : g.neighbours(node)) { // O(n)
+            if (!parentMap.containsKey(neighbor)) {
+                dfs(g, neighbor, node, parentMap);
+            }
+        }
+    }
+
+    private <V> HashMap<V, V> dfsPathToTarget(Graph<V> g, V root, V target) {
+        HashMap<V, V> parentMap = new HashMap<>(); // O(1)
+        Stack<V> stack = new Stack<>(); // O(1)
+
+        stack.push(root); // O(1)
+        parentMap.put(root, null); // O(1)
 
         while (!stack.isEmpty()) {
             V current = stack.pop();
+
+            if (current.equals(target)) {
+                return parentMap;
+            }
+
             for (V neighbour : g.neighbours(current)) {
-                if (!visited.contains(neighbour)) {
-                    visited.add(neighbour);
+                if (!parentMap.containsKey(neighbour)) {
                     stack.push(neighbour);
                     parentMap.put(neighbour, current);
                 }
@@ -100,129 +127,124 @@ public class ProblemSolver implements IProblem {
         return parentMap;
     }
 
-
-
-
-
-
-    
     @Override
     public <V> Edge<V> addRedundant(Graph<V> g, V root) {
-        LinkedList<Graph<V>> Trees = biggestSubTreeList(g, root);
+        LinkedList<Graph<V>> trees = getLargestSubTrees(g, root);
 
-        Graph<V> firstBiggestTree = Trees.poll();
-        Graph<V> secondBiggestTree = Trees.poll();
+        V node1 = getNodeFromTree(trees.poll());
+        V node2 = getNodeFromTree(trees.poll());
 
-        V node1 = null;
-        V node2 = null;
-
-        if (firstBiggestTree != null) {
-            node1 = getDeepestParentWithMostNeighbours(firstBiggestTree);
-        }
-
-        if (secondBiggestTree != null) {
-            node2 = getDeepestParentWithMostNeighbours(secondBiggestTree);
-        }
-
-        Edge<V> edge;
         if (node1 != null && node2 != null) {
-            // Both subtrees exist
-            edge = new Edge<V>(node1, node2);
-        } else if (node1 != null) {
-            // Only the first subtree exists
-            edge = new Edge<V>(root, node1);
-        } else if (node2 != null) {
-            // Only the second subtree exists
-            edge = new Edge<V>(root, node2);
+            return new Edge<>(node1, node2);
+        }
+        if (node1 != null) {
+            return new Edge<>(root, node1);
+        }
+        if (node2 != null) {
+            return new Edge<>(root, node2);
         } else {
-            // No subtrees exist, handle this case as necessary
             throw new IllegalStateException("No subtrees found");
         }
-        return edge;
     }
 
-    private static <V> V getDeepestParentWithMostNeighbours(Graph<V> graph) {
-		Map<V, Integer> depthMap = new HashMap<>();//dybde map
-		Map<V, Integer> scoreMap = new HashMap<>();//socring map
-		Queue<V> queue = new LinkedList<>();
-		
-		V root = graph.getFirstNode();
-		queue.add(root);
-		depthMap.put(root, 0);//dybden til root er null
-		scoreMap.put(root, graph.degree(root));//scoren til root er dens naboer
-	
-		int maxDepth = 0;// highScore variabel
-		
-		while (!queue.isEmpty()) {//imens køen ikke er tom
-			V currentNode = queue.poll();// henter og fjerner frøste node fra kjøen
-			for (V neighbour : graph.neighbours(currentNode)) {// for naboene til current
-				if (!depthMap.containsKey(neighbour)) {// hvis naboen ikke finnes i depthMap
-					int depth = depthMap.get(currentNode) + 1;// dybden plusses med 1
-					depthMap.put(neighbour, depth);// legger til naboen og dybden i hashmap
-					scoreMap.put(neighbour, scoreMap.get(currentNode) + graph.degree(neighbour)); //legger til nabo, og
-					queue.add(neighbour);//legger til naboen i køen
-					if (depth > maxDepth) { //om dybden er større en max
-						maxDepth = depth;// ny highScore
-					}
-				}
-			}
-		}
-		
-		V champNode = null;//seiers node 
-		int maxScore = 0;//highScore
-	
-		for (Map.Entry<V, Integer> entry : depthMap.entrySet()) {//entry gjør det lett å iterere over
-			if (entry.getValue() == maxDepth - 1) {//bare noder som har max dybde, minus 1 så får jeg foreldre
-				int currentScore = scoreMap.get(entry.getKey());// teller naboene til en gitt node
-				if (currentScore > maxScore) {//hvis currentGradtall er større en maxGradtall
-					maxScore = currentScore;//// settes currentGradtall til maxGradtall
-					champNode = entry.getKey();// champNode blir kandidat for noden som skal returneres
-				}
-			}
-		}
-	
-		return champNode;
-	}
+    private <V> V getNodeFromTree(Graph<V> tree) {
+        if (tree != null) {
+            return getDeepestNodeWithMostChildren(tree);
+        }
+        return null;
+    }
 
-    private <V> LinkedList<Graph<V>> biggestSubTreeList(Graph<V> g, V root) {
-        LinkedList<Graph<V>> treeList = new LinkedList<>();
+    private <V> LinkedList<Graph<V>> getLargestSubTrees(Graph<V> g, V root) {
+        Graph<V> largestSubtree = null;
+        Graph<V> secondLargestSubtree = null;
+
         for (V node : g.neighbours(root)) {
-            treeList.add(bfsSubTree(node, g, root));
+            Graph<V> currentSubtree = buildSubTreeFromNode(node, g, root);
+
+            if (largestSubtree == null || currentSubtree.numVertices() > largestSubtree.numVertices()) {
+                secondLargestSubtree = largestSubtree;
+                largestSubtree = currentSubtree;
+            } else if (secondLargestSubtree == null
+                    || currentSubtree.numVertices() > secondLargestSubtree.numVertices()) {
+                secondLargestSubtree = currentSubtree;
+            }
         }
 
-        treeList.sort(Comparator.comparingInt((Graph<V> graph) -> graph.numVertices()).reversed());
+        LinkedList<Graph<V>> result = new LinkedList<>();
+        if (largestSubtree != null) {
+            result.add(largestSubtree);
+        }
+        if (secondLargestSubtree != null) {
+            result.add(secondLargestSubtree);
+        }
 
-        return treeList;
+        return result;
     }
 
-    // må være feil her
-    private <V> Graph<V> bfsSubTree(V startNode, Graph<V> g, V root) {// lagger subtree fra en gitt node. Vil at den
-                                                                      // skal finne
-        Graph<V> subTree = new Graph<>();// nytt tomt tree
-        subTree.addVertex(startNode);// legger til ny root
+    private <V> Graph<V> buildSubTreeFromNode(V startNode, Graph<V> g, V root) {
+        Graph<V> subTree = new Graph<>();
+        subTree.addVertex(startNode);
 
-        Set<V> visited = new HashSet<>();// tomt hashset
-        Queue<V> queue = new LinkedList<>();// tom queue
+        Set<V> visited = new HashSet<>();
+        PriorityQueue<V> queue = new PriorityQueue<>();
 
-        visited.add(startNode);// legger til startNode i visited
-        queue.add(startNode);// legger til startNode i køen
+        visited.add(startNode);
+        queue.add(startNode);
 
-        while (!queue.isEmpty()) {// i mens køen ikke er tom
-            V current = queue.poll();// current er køens førstemann
-
-            for (V neighbor : g.neighbours(current)) {// for barna til current
-                if (!current.equals(neighbor) && !visited.contains(neighbor) && !current.equals(root)) {// hvis naboene
-                                                                                                        // ikke er
-                                                                                                        // besøkt
-                    visited.add(neighbor);// legg til nabo i besøkt
-                    queue.add(neighbor);// legg til nabo i kø
-
-                    subTree.addVertex(neighbor);// legger til noden i treet
-                    subTree.addEdge(current, neighbor);// legger til kanten i treet
+        while (!queue.isEmpty()) {
+            V current = queue.poll();
+            for (V neighbor : g.neighbours(current)) {
+                if (!current.equals(neighbor) && !visited.contains(neighbor) && !current.equals(root)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                    subTree.addVertex(neighbor);
+                    subTree.addEdge(current, neighbor);
                 }
             }
         }
         return subTree;
     }
 
+    private static <V> V getDeepestNodeWithMostChildren(Graph<V> graph) {
+        Map<V, Integer> depthMap = new HashMap<>();
+        Map<V, Integer> scoreMap = new HashMap<>();
+        PriorityQueue<V> queue = new PriorityQueue<>();
+
+        V root = graph.getFirstNode();
+        queue.add(root);
+        depthMap.put(root, 0);
+        scoreMap.put(root, graph.degree(root));
+
+        int maxDepth = 0;
+
+        while (!queue.isEmpty()) {
+            V currentNode = queue.poll();
+            for (V neighbour : graph.neighbours(currentNode)) {
+                if (!depthMap.containsKey(neighbour)) {
+                    int depth = depthMap.get(currentNode) + 1;
+                    depthMap.put(neighbour, depth);
+                    scoreMap.put(neighbour, scoreMap.get(currentNode) + graph.degree(neighbour));
+                    queue.add(neighbour);
+                    if (depth > maxDepth) {
+                        maxDepth = depth;
+                    }
+                }
+            }
+        }
+
+        V bestNode = null;
+        int maxScore = 0;
+
+        for (Map.Entry<V, Integer> entry : depthMap.entrySet()) {
+            if (entry.getValue() == maxDepth - 1) {
+                int currentScore = scoreMap.get(entry.getKey());
+                if (currentScore > maxScore) {
+                    maxScore = currentScore;
+                    bestNode = entry.getKey();
+                }
+            }
+        }
+
+        return bestNode;
+    }
 }
