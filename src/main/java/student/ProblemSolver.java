@@ -2,14 +2,13 @@ package student;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.Stack;
+
 
 import graph.*;
 
@@ -44,29 +43,6 @@ public class ProblemSolver implements IProblem {
         return result; // O(1)
     }
 
-    // @Override
-    // public <V> V lca(Graph<V> g, V root, V u, V v) {
-    // HashMap<V, V> parentMapU = dfsPathToTarget(g, root, u);
-    // HashMap<V, V> parentMapV = dfsPathToTarget(g, root, v);
-
-    // HashMap<V, Boolean> pathFromU = new HashMap<>(); //O(1)
-    // V current = u; //O(1)
-
-    // while (current != null) {//O(n)
-    // pathFromU.put(current, true); //O(1)
-    // current = parentMapU.get(current); //O(1)
-    // }
-
-    // current = v;
-    // while (current != null) { //O(n)
-    // if (pathFromU.containsKey(current)) { //O(1)
-    // return current;
-    // }
-    // current = parentMapV.get(current); //O(1)
-    // }
-
-    // return null;
-    // }
     public <V> V lca(Graph<V> g, V root, V u, V v) {
         Map<V, V> parentMap = new HashMap<>();
         dfs(g, root, null, parentMap);
@@ -103,29 +79,6 @@ public class ProblemSolver implements IProblem {
         }
     }
 
-    private <V> HashMap<V, V> dfsPathToTarget(Graph<V> g, V root, V target) {
-        HashMap<V, V> parentMap = new HashMap<>(); // O(1)
-        Stack<V> stack = new Stack<>(); // O(1)
-
-        stack.push(root); // O(1)
-        parentMap.put(root, null); // O(1)
-
-        while (!stack.isEmpty()) {
-            V current = stack.pop();
-
-            if (current.equals(target)) {
-                return parentMap;
-            }
-
-            for (V neighbour : g.neighbours(current)) {
-                if (!parentMap.containsKey(neighbour)) {
-                    stack.push(neighbour);
-                    parentMap.put(neighbour, current);
-                }
-            }
-        }
-        return parentMap;
-    }
 
     @Override
     public <V> Edge<V> addRedundant(Graph<V> g, V root) {
@@ -247,4 +200,5 @@ public class ProblemSolver implements IProblem {
 
         return bestNode;
     }
+    
 }
