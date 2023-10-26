@@ -22,7 +22,9 @@ For each method of the different strategies give a runtime analysis in Big-O not
     * The `mst` method finds the Minimum Spanning Tree of a weighted graph using Kruskal's algorithm. The edges of the graph are first copied to a list in (O(m) time. These edges are then sorted in `(O(m log m))` time. The algorithm uses a disjoint set data structure initialized in (O(n)) time. The main loop iterates through the sorted edges and, for each edge, performs union and find operations on the disjoint set data structure in `(O(α(n))` time, where `(α(n))` is the inverse Ackermann function. Since `(α(n))` is almost constant for all practical input sizes, the dominant term in the time complexity is the sorting step, making the overall time complexity of the method `(O(m log m))`.
 
 * ``lca(Graph<T> g, T root, T u, T v)``: O(n)
-    * *Insert description of why the method has the given runtime*
+    * *The `lca` method finds the Lowest Common Ancestor (LCA) of two nodes `u` and `v` in a tree represented by a graph. It does this by performing a Depth-First Search (DFS) traversal of the tree from the `root` node. During the DFS traversal, a `parentMap` is built to keep track of the parent of each node. The DFS traversal itself has a time complexity of `(O(n))`, where `(n)` is the number of nodes in the tree. The while loops that follow have a worst-case time complexity of `(O(n))` each, as they iterate through the height of the tree. Therefore, the overall time complexity of the method is `(O(n))`.*
+
+    
 * ``addRedundant(Graph<T> g, T root)``: O(?)
     * *Insert description of why the method has the given runtime*
 
