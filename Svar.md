@@ -19,7 +19,7 @@ For each method of the different strategies give a runtime analysis in Big-O not
 **If you have implemented any helper methods you must add these as well.**
 
 * ``mst(WeightedGraph<T, E> g)``: O(m log m)
-    * The `mst` method finds the Minimum Spanning Tree of a weighted graph using Kruskal's algorithm. The edges of the graph are first copied to a list in \(O(m)\) time. These edges are then sorted in \(O(m \log m)\) time. The algorithm uses a disjoint set data structure initialized in \(O(n)\) time. The main loop iterates through the sorted edges and, for each edge, performs union and find operations on the disjoint set data structure in \(O(\alpha(n))\) time, where \(\alpha(n)\) is the inverse Ackermann function. Since \(\alpha(n)\) is almost constant for all practical input sizes, the dominant term in the time complexity is the sorting step, making the overall time complexity of the method \(O(m \log m)\).
+    * The `mst` method finds the Minimum Spanning Tree of a weighted graph using Kruskal's algorithm. The edges of the graph are first copied to a list in (O(m) time. These edges are then sorted in `(O(m log m))` time. The algorithm uses a disjoint set data structure initialized in (O(n)) time. The main loop iterates through the sorted edges and, for each edge, performs union and find operations on the disjoint set data structure in `(O(α(n))` time, where `(α(n))` is the inverse Ackermann function. Since `(α(n))` is almost constant for all practical input sizes, the dominant term in the time complexity is the sorting step, making the overall time complexity of the method `(O(m log m))`.
 
 * ``lca(Graph<T> g, T root, T u, T v)``: O(n)
     * *Insert description of why the method has the given runtime*
