@@ -24,9 +24,27 @@ For each method of the different strategies give a runtime analysis in Big-O not
 * ``lca(Graph<T> g, T root, T u, T v)``: O(n)
     * *The `lca` method finds the Lowest Common Ancestor (LCA) of two nodes `u` and `v` in a tree represented by a graph. It does this by performing a Depth-First Search (DFS) traversal of the tree from the `root` node. During the DFS traversal, a `parentMap` is built to keep track of the parent of each node. The DFS traversal itself has a time complexity of `(O(n))`, where `(n)` is the number of nodes in the tree. The while loops that follow have a worst-case time complexity of `(O(n))` each, as they iterate through the height of the tree. Therefore, the overall time complexity of the method is `(O(n))`.*
 
+
+* ``addRedundant(Graph<T> g, T root)``: O(d (n)) or O(n) if ve assume that the degree of the root
+    node is not huge.
+
+    * *The addRedudnat method uses two helper methods, that i will write the time complexity for below. `getLargestSubTrees` finds the two largest subtrees from the root. This method has a time complexity of `O(d (n +m)` where d is the degree of the root node and n and m is the number of nodes and edges. Since the graph is a tree like structure `m = n-1` hence we can simplify the time complexity to `O(d (n))`
     
-* ``addRedundant(Graph<T> g, T root)``: O(?)
-    * *Insert description of why the method has the given runtime*
+    The `getNodeFromTree` methods uses a helper method `getDeepestNodeWithMostChildren` the helper method has a time complexity of `O(n + m)`. This methods uses a `BFS`like algorithm to find the deepest node that have the most children. It stores the result in two HashMaps, `depthMap`and `scoreMap`. It iterates over alle nodes in the subTree and finds the deepest node with most children.
+    Again since the graph is a tree like structure `m = n-1` hence we can simplify the time complexity to `O(n)` 
+
+    The `getNodeFromTree` method is hence `O(n)`.
+
+
+    Now lets get the time complexity for `getLargestSubTrees`. The method find the neighBours from the root node and build subtrees using a helper method `buildSubTreeFromNode`. 
+    Lets first analyse the `buildSubTreeFromNode` method. The `buildSubTreeFromNode` method uses a `BFS` like algorithm to build a subTree from a node. Building a subTree requires a way of mapping each node and edge to a new graph. Hence it iterates over all nodes and edges 
+    This results in a time complecity of `O(n+m)`or agian since the grapgh is represented ass a tree we can simplify it down to `O(n)`.
+
+    Now lets continue with the `getLargestSubTrees` method. The goal for the method is to find the two largest subtrees in the main graph. First i initate two empty subtrees. The i find the neighbour nodes from the root. The `buildSubTreeFromNode` method then builds a new subtree from the current node, this is done in `O(n)` time. When a subtree have been build, there is a series of if test that check if the current subtree is larger than already foun subtrees, if so the current subtree is set to "largest or secondLargerst subtree". 
+
+    When all the subtrees have been checked, the resulst are added to a linkedList in `O(1)` time, and the methods return a `LinkedList<Graph<V>> "result"`.
+
+     *
 
 
 

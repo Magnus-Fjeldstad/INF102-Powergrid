@@ -80,125 +80,138 @@ public class ProblemSolver implements IProblem {
     }
 
 
+    /**
+     * Since this graph is a tree like structure and no loops or multiple edges are allowed
+     * We can represent m as m= n-1 since there will allways be a node at the bottom of the tree
+     * Hence we can simplyfy the Big O to O(d (n)) where d is the degree from the root node
+     * and n is the number of edges. In my helper methods ive kept the time complexity notation to be
+     * O(n+m) for clarity but in reality it could be simplified to O(n).
+     */
     @Override
-    public <V> Edge<V> addRedundant(Graph<V> g, V root) {
-        LinkedList<Graph<V>> trees = getLargestSubTrees(g, root);
+    public <V> Edge<V> addRedundant(Graph<V> g, V root) { //O(d (n))
+        LinkedList<Graph<V>> trees = getLargestSubTrees(g, root); // O(d (n + m)) / O(n+m)
 
-        V node1 = getNodeFromTree(trees.poll());
-        V node2 = getNodeFromTree(trees.poll());
+        V node1 = getNodeFromTree(trees.poll()); //O(n + m)
+        V node2 = getNodeFromTree(trees.poll()); //O(n + m)
 
-        if (node1 != null && node2 != null) {
-            return new Edge<>(node1, node2);
+        if (node1 != null && node2 != null) { //O(1)
+            return new Edge<>(node1, node2); //O(1)
         }
-        if (node1 != null) {
-            return new Edge<>(root, node1);
+        if (node1 != null) { //O(1)
+            return new Edge<>(root, node1); //O(1)
         }
-        if (node2 != null) {
-            return new Edge<>(root, node2);
+        if (node2 != null) { //O(1)
+            return new Edge<>(root, node2); //O(1)
         } else {
-            throw new IllegalStateException("No subtrees found");
+            throw new IllegalStateException("No subtrees found"); //O(1)
         }
     }
 
-    private <V> V getNodeFromTree(Graph<V> tree) {
-        if (tree != null) {
-            return getDeepestNodeWithMostChildren(tree);
+    /*
+     * Helper method that cheks that a tree is not null
+     * used in addRedundant
+     */
+    private <V> V getNodeFromTree(Graph<V> tree) { //O(n + m)
+        if (tree != null) { //O(1)
+            return getDeepestNodeWithMostChildren(tree); //O(n + m)
         }
-        return null;
+        return null; //O(1)
     }
 
-    private <V> LinkedList<Graph<V>> getLargestSubTrees(Graph<V> g, V root) {
-        Graph<V> largestSubtree = null;
-        Graph<V> secondLargestSubtree = null;
+    private <V> LinkedList<Graph<V>> getLargestSubTrees(Graph<V> g, V root) { //O(d (n+m)) it could also be O(n+m) if we
+                                                                            //Assume that the root node does not have
+                                                                            //a huge degree
+        Graph<V> largestSubtree = null; //O(1)
+        Graph<V> secondLargestSubtree = null; //O(1)
 
-        for (V node : g.neighbours(root)) {
-            Graph<V> currentSubtree = buildSubTreeFromNode(node, g, root);
-
-            if (largestSubtree == null || currentSubtree.numVertices() > largestSubtree.numVertices()) {
-                secondLargestSubtree = largestSubtree;
-                largestSubtree = currentSubtree;
-            } else if (secondLargestSubtree == null
-                    || currentSubtree.numVertices() > secondLargestSubtree.numVertices()) {
-                secondLargestSubtree = currentSubtree;
+        for (V node : g.neighbours(root)) { //O(d) where d is the degree of the Root Node
+            Graph<V> currentSubtree = buildSubTreeFromNode(node, g, root); //O(n+m)
+           
+            if (largestSubtree == null || currentSubtree.numVertices() > largestSubtree.numVertices()) { //O(1)
+                secondLargestSubtree = largestSubtree; //O(1)
+                largestSubtree = currentSubtree; //O(1)
+            } else if (secondLargestSubtree == null //O(1)
+                    || currentSubtree.numVertices() > secondLargestSubtree.numVertices()) { //O(1)
+                secondLargestSubtree = currentSubtree; //O(1)
             }
         }
 
-        LinkedList<Graph<V>> result = new LinkedList<>();
-        if (largestSubtree != null) {
-            result.add(largestSubtree);
+        LinkedList<Graph<V>> result = new LinkedList<>(); //O(1)
+        if (largestSubtree != null) { //O(1)
+            result.add(largestSubtree); //O(1)
         }
-        if (secondLargestSubtree != null) {
-            result.add(secondLargestSubtree);
+        if (secondLargestSubtree != null) { //O(1)
+            result.add(secondLargestSubtree); //O(1)
         }
 
-        return result;
+        return result; //O(1)
     }
 
-    private <V> Graph<V> buildSubTreeFromNode(V startNode, Graph<V> g, V root) {
-        Graph<V> subTree = new Graph<>();
-        subTree.addVertex(startNode);
+    private <V> Graph<V> buildSubTreeFromNode(V startNode, Graph<V> g, V root) { //O(n+m) 
+        Graph<V> subTree = new Graph<>(); //O(1)
+        subTree.addVertex(startNode); //O(1)
 
-        Set<V> visited = new HashSet<>();
-        PriorityQueue<V> queue = new PriorityQueue<>();
+        Set<V> visited = new HashSet<>(); //O(1)
+        PriorityQueue<V> queue = new PriorityQueue<>(); //O(1)
 
-        visited.add(startNode);
-        queue.add(startNode);
+        visited.add(startNode); //O(1)
+        queue.add(startNode); //O(log n)
 
-        while (!queue.isEmpty()) {
-            V current = queue.poll();
-            for (V neighbor : g.neighbours(current)) {
+        while (!queue.isEmpty()) { //O(n) nis the number of nodes
+            V current = queue.poll(); //O( log n)
+            for (V neighbor : g.neighbours(current)) { //O(m)
                 if (!current.equals(neighbor) && !visited.contains(neighbor) && !current.equals(root)) {
-                    visited.add(neighbor);
+                    visited.add(neighbor); //O(1)
                     queue.add(neighbor);
-                    subTree.addVertex(neighbor);
-                    subTree.addEdge(current, neighbor);
+                    subTree.addVertex(neighbor); //O(1)
+                    subTree.addEdge(current, neighbor); //O(1)
                 }
             }
         }
-        return subTree;
+        return subTree; //O(1)
     }
 
-    private static <V> V getDeepestNodeWithMostChildren(Graph<V> graph) {
-        Map<V, Integer> depthMap = new HashMap<>();
-        Map<V, Integer> scoreMap = new HashMap<>();
-        PriorityQueue<V> queue = new PriorityQueue<>();
+    private static <V> V getDeepestNodeWithMostChildren(Graph<V> graph) { //O(n + m)
+        Map<V, Integer> depthMap = new HashMap<>(); //O(1)
+        Map<V, Integer> scoreMap = new HashMap<>(); //O(1)
+        PriorityQueue<V> queue = new PriorityQueue<>(); //O(1)
 
-        V root = graph.getFirstNode();
-        queue.add(root);
-        depthMap.put(root, 0);
-        scoreMap.put(root, graph.degree(root));
+        V root = graph.getFirstNode(); //O(1)
+        queue.add(root);//O(1)
+        depthMap.put(root, 0);//O(1)
+        scoreMap.put(root, graph.degree(root)); //O(1)
 
-        int maxDepth = 0;
+        int maxDepth = 0; //O(1)
 
-        while (!queue.isEmpty()) {
-            V currentNode = queue.poll();
-            for (V neighbour : graph.neighbours(currentNode)) {
-                if (!depthMap.containsKey(neighbour)) {
-                    int depth = depthMap.get(currentNode) + 1;
-                    depthMap.put(neighbour, depth);
-                    scoreMap.put(neighbour, scoreMap.get(currentNode) + graph.degree(neighbour));
-                    queue.add(neighbour);
-                    if (depth > maxDepth) {
-                        maxDepth = depth;
+        while (!queue.isEmpty()) { //O(n)
+            V currentNode = queue.poll(); //O( log n)
+            for (V neighbour : graph.neighbours(currentNode)) { //O(m) since it iterates over all nodes exaclty once
+                if (!depthMap.containsKey(neighbour)) { //O(1)
+                    int depth = depthMap.get(currentNode) + 1; //O(1)
+                    depthMap.put(neighbour, depth); //O(1)
+                    scoreMap.put(neighbour, scoreMap.get(currentNode) + graph.degree(neighbour)); //O(1)
+                    queue.add(neighbour); //O( log n)
+                    if (depth > maxDepth) { //O(1)
+                        maxDepth = depth; //O(1)
                     }
                 }
             }
         }
 
-        V bestNode = null;
-        int maxScore = 0;
+        V bestNode = null; //O(1)
+        int maxScore = 0; //O(1)
 
-        for (Map.Entry<V, Integer> entry : depthMap.entrySet()) {
-            if (entry.getValue() == maxDepth - 1) {
-                int currentScore = scoreMap.get(entry.getKey());
-                if (currentScore > maxScore) {
-                    maxScore = currentScore;
-                    bestNode = entry.getKey();
+        for (Map.Entry<V, Integer> entry : depthMap.entrySet()) { //O(n) n is the number of nodes
+            if (entry.getValue() == maxDepth - 1) { //O(1)
+                int currentScore = scoreMap.get(entry.getKey()); //O(1)
+                if (currentScore > maxScore) { //O(1)
+                    maxScore = currentScore; //O(1)
+                    bestNode = entry.getKey(); //O(1)
                 }
             }
         }
 
-        return bestNode;
+        return bestNode; //O(1)
     }
     
 }
